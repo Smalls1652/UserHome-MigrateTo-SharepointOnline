@@ -10,16 +10,28 @@ I hope this repository will help anybody out there!
 
 ## Status of Repository
 
-- [x] Invoke-UserHomeMigrationBuilder.ps1
-- [x] Get-FolderFileSize.ps1
-- [x] Get-AadUserIsLicensed.ps1
-- [ ] Script to run the SharePoint Migration Tool using the [PowerShell cmdlets available](https://docs.microsoft.com/en-us/powershell/spmt/intro?view=spmt-ps).
+- **Data Gather Scripts**
+    - [x] Get-FolderFileSize.ps1
+    - [x] Get-AadUserIsLicensed.ps1
+- **User Home Scripts**
+    - [ ] Remove-UserHomeSharePermissions.ps1
+    - [ ] Remove-UserHomeMapping.ps1
+- **SharePoint Migration Tool Scripts**
+    - [x] Import-SPMTModule.ps1
+    - [ ] Create-BatchListByTier.ps1
+        - Cleaning up code and adding comments.
+    - [x] Invoke-UserHomeMigrationBuilder.ps1
+    - [ ] Invoke-AddJobsToSPMT.ps1
 
 ***Other scripts I create for this process will be added in when necessary.***
 
 ## Script Details
 
-### Get-FolderFileSize.ps1
+### Data Gather Scripts
+
+In this section, I will cover the scripts that are most useful for gathering data on users and their respective home drives.
+
+#### Get-FolderFileSize.ps1
 
 This script is intended to help gather data from a folder and determine when the last time a file was written to it and how large the total size of the folder is. It also converts the total bytes into total gigabytes to make the output easier to read. In my case with our users' home drives, I needed to identify which users had the largest amount of storage. My methodology with doing the migration jobs utilizing the **SharePoint Migration Tool** was to create batches of jobs depending on who has the most data and how many to do based off of that.
 
@@ -53,21 +65,7 @@ C:\path\to\folder\c    4/21/2019 3:30:04 PM   3.9221
 C:\path\to\folder\d    9/01/2012 1:03:19 AM   0.0020
 ```
 
-### Invoke-UserHomeMigrationBuilder.ps1
-
-This script will utilize the `ActiveDirectory` module that comes installed with the **Remote Server Administration Tools** on Windows and Windows Server to get user objects and create the bulk migration job CSV file that can be imported into the **SharePoint Migration Tool**. You supply the usernames, Office 365 tenant domain name, and the subfolder you want to put into a user's OneDrive directory.
-
-An example of using it would be like this:
-
-```powershell
-PS \> .\Invoke-UserHomeMigrationBuilder.ps1 -UserName @("jdoe1", "jwinger", "pryan") -TenantName "contoso.com" -SPOSubFolder "UserHome Migration" -ExportPath ".\UserHomeDir-MigrationJob.csv"
-```
-
-This will create a CSV file in the current directory that is formatted to import into the **SharePoint Migration Tool**.
-
-**NOTE**: The way this script works, it only checks the `HomeDirectory` property that is on the user's Active Directory object. If you map their home directory differently, you can re-tool it to fit your needs.
-
-### Get-AadUserIsLicensed.ps1
+#### Get-AadUserIsLicensed.ps1
 
 This script will check to see if a user exists in Azure AD and if they are licensed with the right O365/M365 plan. Some users who have left in our environment still have a local on-premise user home drive that hasn't been removed yet, so to prevent unnecessary data being migrated this let me check for that. At the same time I needed a way to filter out users who have left, but their account hasn't been removed from Azure AD yet; however, they're not assigned the M365 A5 plan anymore because they've left.
 
@@ -109,4 +107,30 @@ phawthorne  N/A                           False
 PS \> .\Get-AadUserIsLicensed.ps1 -UserName @("jdoe1", "jwinger", "phawthorne", "bperry") -DomainName "contoso.com" -SkuId "e97c048c-37a4-45fb-ab50-922fbf07a370" -ErrorVariable "failedUsers"
 ```
 
-From there you'll have a variable, `$failedUsers`, to look at. If you had numerous errors you can do `$failedUsers.TargetObject` to get a return of what caused the error for each user. You can also do `$failedUsers[n]`, where `n` is a number from 0 to however large the array is, to get the error for one particular object. 
+From there you'll have a variable, `$failedUsers`, to look at. If you had numerous errors you can do `$failedUsers.TargetObject` to get a return of what caused the error for each user. You can also do `$failedUsers[n]`, where `n` is a number from 0 to however large the array is, to get the error for one particular object.
+
+### SharePoint Migration Tool Scripts
+
+#### Import-SPMTModule.ps1
+
+This is a script I made to easily import the SharePoint Migration Tool module to the current PowerShell session. The reason why I made this is because the module shows up in your 'Modules' directory, but it doesn't officially show in your available modules when you load a PowerShell console. At least in my case it doesn't on Windows 10 1909/2004 or Windows Server 2019, so I wrote this to import it easily without searching for the module file itself.
+
+To use it you run it like this:
+
+```powershell
+PS \> .\Import-SPMTModule.ps1
+```
+
+#### Invoke-UserHomeMigrationBuilder.ps1
+
+This script will utilize the `ActiveDirectory` module that comes installed with the **Remote Server Administration Tools** on Windows and Windows Server to get user objects and create the bulk migration job CSV file that can be imported into the **SharePoint Migration Tool**. You supply the usernames, Office 365 tenant domain name, and the subfolder you want to put into a user's OneDrive directory.
+
+An example of using it would be like this:
+
+```powershell
+PS \> .\Invoke-UserHomeMigrationBuilder.ps1 -UserName @("jdoe1", "jwinger", "pryan") -TenantName "contoso.com" -SPOSubFolder "UserHome Migration" -ExportPath ".\UserHomeDir-MigrationJob.csv"
+```
+
+This will create a CSV file in the current directory that is formatted to import into the **SharePoint Migration Tool**.
+
+**NOTE**: The way this script works, it only checks the `HomeDirectory` property that is on the user's Active Directory object. If you map their home directory differently, you can re-tool it to fit your needs.
