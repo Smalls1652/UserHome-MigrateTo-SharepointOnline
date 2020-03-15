@@ -111,6 +111,8 @@ From there you'll have a variable, `$failedUsers`, to look at. If you had numero
 
 ### SharePoint Migration Tool Scripts
 
+In this section, I will cover scripts related to the SharePoint Migration Tool.
+
 #### Import-SPMTModule.ps1
 
 This is a script I made to easily import the SharePoint Migration Tool module to the current PowerShell session. The reason why I made this is because the module shows up in your 'Modules' directory, but it doesn't officially show in your available modules when you load a PowerShell console. At least in my case it doesn't on Windows 10 1909/2004 or Windows Server 2019, so I wrote this to import it easily without searching for the module file itself.
