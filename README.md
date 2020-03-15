@@ -12,8 +12,7 @@ I hope this repository will help anybody out there!
 
 - [x] Invoke-UserHomeMigrationBuilder.ps1
 - [x] Get-FolderFileSize.ps1
-- [ ] Get-AadUserStatus.ps1
-    - In the process of removing organization references.
+- [x] Get-AadUserIsLicensed.ps1
 - [ ] Script to run the SharePoint Migration Tool using the [PowerShell cmdlets available](https://docs.microsoft.com/en-us/powershell/spmt/intro?view=spmt-ps).
 
 ***Other scripts I create for this process will be added in when necessary.***
@@ -67,3 +66,47 @@ PS \> .\Invoke-UserHomeMigrationBuilder.ps1 -UserName @("jdoe1", "jwinger", "pry
 This will create a CSV file in the current directory that is formatted to import into the **SharePoint Migration Tool**.
 
 **NOTE**: The way this script works, it only checks the `HomeDirectory` property that is on the user's Active Directory object. If you map their home directory differently, you can re-tool it to fit your needs.
+
+### Get-AadUserIsLicensed.ps1
+
+This script will check to see if a user exists in Azure AD and if they are licensed with the right O365/M365 plan. Some users who have left in our environment still have a local on-premise user home drive that hasn't been removed yet, so to prevent unnecessary data being migrated this let me check for that. At the same time I needed a way to filter out users who have left, but their account hasn't been removed from Azure AD yet; however, they're not assigned the M365 A5 plan anymore because they've left.
+
+To use this script, you need to ensure you have the `AzureAD` module installed and the `Connect-AzureAD` cmdlet has been ran before using it.
+
+To get the license state for a user, you can run something like this:
+
+```powershell
+PS \> .\Get-AadUserIsLicensed.ps1 -UserName @("jdoe1", "jwinger", "phawthorne") -DomainName "contoso.com" -SkuId "e97c048c-37a4-45fb-ab50-922fbf07a370"
+```
+
+or
+
+```powershell
+PS \> .\Get-AadUserIsLicensed.ps1 -UserName @("jdoe1", "jwinger", "phawthorne") -DomainName "contoso.com" -SkuPartNumber "M365EDU_A5_FACULTY"
+```
+
+The output would look like:
+
+```
+[...]\Get-AadUserIsLicensed.ps1 : '0' returned for 'phawthorne'. There should only be one record for this username.
+At line:1 char:1
++ .\Get-AadUserIsLicensed.ps1 -UserName @("jdoe1", "jwinger", "p ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (@{UserName=phaw...SearchResults=}:PSObject) [Get-AadUserIsLicensed.ps1], Exception
+    + FullyQualifiedErrorId : AadLicenseCheck.UserSearch,Get-AadUserIsLicensed.ps1
+
+
+UserName    UserPrincipalName        IsLicensed
+--------    -----------------        ----------
+jdoe1       jdoe1@contoso.com             True
+jwinger     jwinger@contoso.com           True
+phawthorne  N/A                           False
+```
+
+**NOTE**: If a user doesn't exist, it should not stop processing users unless you change the `ErrorAction` explicitly. The error is meant to write to the console and provide details on what happened. In fact you can have the errors sent to a variable. You can run the script like this:
+
+```powershell
+PS \> .\Get-AadUserIsLicensed.ps1 -UserName @("jdoe1", "jwinger", "phawthorne", "bperry") -DomainName "contoso.com" -SkuId "e97c048c-37a4-45fb-ab50-922fbf07a370" -ErrorVariable "failedUsers"
+```
+
+From there you'll have a variable, `$failedUsers`, to look at. If you had numerous errors you can do `$failedUsers.TargetObject` to get a return of what caused the error for each user. You can also do `$failedUsers[n]`, where `n` is a number from 0 to however large the array is, to get the error for one particular object. 
