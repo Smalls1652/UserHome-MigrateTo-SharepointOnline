@@ -54,7 +54,7 @@ begin {
         "Properties" = @("HomeDirectory");
     }
 
-    if ($null -ne $AdServer) {
+    if ($AdServer) {
         #If the 'AdServer' parameter was provided, add it to the $AdUserSplat hashtable.
         $AdUserSplat.Add("Server", $AdServer)
     }
