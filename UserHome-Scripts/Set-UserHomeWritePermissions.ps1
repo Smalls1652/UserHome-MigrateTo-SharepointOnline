@@ -35,7 +35,7 @@
     For info on the 'System.Security.AccessControl.FileSystemRights' type:  https://docs.microsoft.com/en-us/dotnet/api/system.security.accesscontrol.filesystemrights
     For info on the 'System.Security.AccessControl.AccessControlType' type: https://docs.microsoft.com/en-us/dotnet/api/system.security.accesscontrol.accesscontroltype
 #>
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess)]
 param(
     [Parameter(Position = 0, Mandatory)]
     [string]$Domain,
@@ -90,7 +90,8 @@ process {
         $FolderAcl.AddAccessRule($NewAclRule) #Add the new access rule to the ACL object.
     }
 
-    Write-Verbose "Updating the ACL for '$($FolderPath)'."
-    Set-Acl -Path $FolderPath -AclObject $FolderAcl -ErrorAction Stop #Add the modified ACL object to the folder.
+    if ($PSCmdlet.ShouldProcess($FolderPath, "Update ACL")) {
+        Set-Acl -Path $FolderPath -AclObject $FolderAcl -ErrorAction Stop #Add the modified ACL object to the folder.
+    }
 
 }
