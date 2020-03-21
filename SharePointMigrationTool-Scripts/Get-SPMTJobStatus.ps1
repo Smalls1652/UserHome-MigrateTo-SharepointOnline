@@ -20,7 +20,7 @@ process {
             $returnObj = [System.Collections.Generic.List[pscustomobject]]::new()
             switch ($OnlyShow) {
                 "InProgress" {
-                    $TaskStatus = $SpmtMigration.StatusOfTasks | Where-Object { $PSItem.Status -eq "INPROGRESS" } | Sort-Object -Property "MigratingProgressPercentage"
+                    $TaskStatus = $SpmtMigration.StatusOfTasks | Where-Object { ($PSItem.Status -eq "INPROGRESS") -or (($PSItem.MigratingProgressPercentage -ne 0) -and ($PSItem.Status -ne "COMPLETED")) } | Sort-Object -Property "MigratingProgressPercentage"
                     break
                 }
 
