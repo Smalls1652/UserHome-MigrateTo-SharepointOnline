@@ -3,6 +3,9 @@ param(
     [Parameter(Position = 0)]
     [Parameter(ParameterSetName = "MigrationProgress")]
     [switch]$MigrationProgress,
+    [Parameter(Position = 1)]
+    [Parameter(ParameterSetName = "MigrationProgress")]
+    [switch]$OnlyShowInProgress,
     [Parameter(Position = 0)]
     [Parameter(ParameterSetName = "TotalJobsComplete")]
     [switch]$TotalJobsComplete
@@ -14,7 +17,18 @@ process {
     switch ($PSCmdlet.ParameterSetName) {
         "MigrationProgress" {
             $returnObj = [System.Collections.Generic.List[pscustomobject]]::new()
-            foreach ($task in ($SpmtMigration.StatusOfTasks | Sort-Object -Property "MigratingProgressPercentage")) {
+            switch ($OnlyShowInProgress) {
+                $true {
+                    $TaskStatus = $SpmtMigration.StatusOfTasks | Where-Object { $PSItem.Status -eq "INPROGRESS" } | Sort-Object -Property "MigratingProgressPercentage"
+                    break
+                }
+
+                Default {
+                    $TaskStatus = $SpmtMigration.StatusOfTasks | Sort-Object -Property "MigratingProgressPercentage"
+                    break
+                }
+            }
+            foreach ($task in $TaskStatus) {
                 $returnObj.Add(
                     [pscustomobject]@{
                         "Source"          = $task.SourceURI;
