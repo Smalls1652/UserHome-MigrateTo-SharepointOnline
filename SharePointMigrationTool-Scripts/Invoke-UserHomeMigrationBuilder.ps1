@@ -40,14 +40,6 @@ param(
 )
 
 begin {
-    class UserAccountObj {
-        [string]$Source
-        [string]$SourceDocLib
-        [string]$SourceSubFolder
-        [string]$TargetWeb
-        [string]$TargetDocLib
-        [string]$TargetSubFolder
-    }
 
     #Putting the common parameters being used in the `Get-ADUser` cmdlet.
     $AdUserSplat = @{
@@ -74,7 +66,7 @@ process {
         if ($UserAccount.HomeDirectory) {
             #If the 'HomeDirectory' property does exist on the AD object, build an object and add it to the UserData array
             $UserData.Add(
-                [UserAccountObj]@{
+                [pscustomobject]@{
                     "Source"          = $UserAccount.HomeDirectory;
                     "TargetWeb"       = "https://$($DomainSharepointBase)-my.sharepoint.com/personal/$($UserAccount.Name)_$($SharepointPersonalDomain)/";
                     "TargetDocLib"    = "Documents";
