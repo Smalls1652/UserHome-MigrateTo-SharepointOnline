@@ -6,7 +6,7 @@ param(
     [Parameter(Position = 1)]
     [Parameter(ParameterSetName = "MigrationProgress")]
     [ValidateSet("All", "InProgress", "Completed", "NotStarted")]
-    [string]$OnlyShowInProgress = "All",
+    [string]$OnlyShow = "All",
     [Parameter(Position = 0)]
     [Parameter(ParameterSetName = "TotalJobsComplete")]
     [switch]$TotalJobsComplete
@@ -18,7 +18,7 @@ process {
     switch ($PSCmdlet.ParameterSetName) {
         "MigrationProgress" {
             $returnObj = [System.Collections.Generic.List[pscustomobject]]::new()
-            switch ($OnlyShowInProgress) {
+            switch ($OnlyShow) {
                 "InProgress" {
                     $TaskStatus = $SpmtMigration.StatusOfTasks | Where-Object { $PSItem.Status -eq "INPROGRESS" } | Sort-Object -Property "MigratingProgressPercentage"
                     break
