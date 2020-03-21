@@ -68,6 +68,8 @@ process {
             $UserData.Add(
                 [pscustomobject]@{
                     "Source"          = $UserAccount.HomeDirectory;
+                    "SourceDocLib"    = $null;
+                    "SourceSubFolder" = $null
                     "TargetWeb"       = "https://$($DomainSharepointBase)-my.sharepoint.com/personal/$($UserAccount.Name)_$($SharepointPersonalDomain)/";
                     "TargetDocLib"    = "Documents";
                     "TargetSubFolder" = $SPOSubFolder;
