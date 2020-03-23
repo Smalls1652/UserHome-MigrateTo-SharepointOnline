@@ -56,7 +56,7 @@ begin {
 }
 
 process {
-    $UserData = [System.Collections.Generic.List[UserAccountObj]]::new()
+    $UserData = [System.Collections.Generic.List[pscustomobject]]::new()
 
     #Loop through each UserName provided.
     foreach ($User in $UserName) {
